@@ -73,7 +73,7 @@ $request = isset($_REQUEST['request']) ? json_decode($_REQUEST['request']) : fal
 if ($_REQUEST['request'] == 'put_ar_data') {  
   $request = new stdClass();  
   $request->action = 'put_ar_data';
-  $request->args = array('id' => 0, payload' => $_REQUEST['payload']);
+  $request->args = array('id' => +$_GET['id'], 'value' => 255);
 }
 
 $handler = new ArduinoRouter($request);

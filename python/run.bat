@@ -1,1 +1,0 @@
-python server.py --usbSerial=COM3 --remoteHost=196.40.97.150 --remotePort=80

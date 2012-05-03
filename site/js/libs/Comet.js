@@ -15,7 +15,7 @@
       args = args || [];
 
       for (;i < len;i++) {
-        c.apply(context, args);
+        e[i].apply(context, args);
       }
 
       delete events[id];
@@ -38,11 +38,11 @@
       incomingXHR = null;  
 
     var getNextId = function() {
-      if (typeof Comet_staticId === 'undefined') {
-        return Comet._staticId = 0;
+      if (typeof window.Comet._staticId === 'undefined') {
+        return window.Comet._staticId = 0;
       }
 
-      return ++Comet._staticId;
+      return ++window.Comet._staticId;
     };
 
     // Public members

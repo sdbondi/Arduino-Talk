@@ -12,12 +12,12 @@ class RequestHandler {
     return array('state' => 'error', 'message' => $message);
   }
 
-  protected function response($payload = null) {
-    if (!$payload) {
+  protected function response($result = null) {
+    if (!$result) {
       return false;
     }
 
-    return array('state' => 'OK', 'payload' => $payload);
+    return array('state' => 'OK', 'result' => $result);
   }
 
   public function get_response() {
