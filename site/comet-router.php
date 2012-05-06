@@ -8,9 +8,6 @@ define('WEB_SHM', ftok(__FILE__, "w"));
 define('LISTEN_TIMEOUT', 60/*secs*/);
                                                          
 class ArduinoRouter extends RequestHandler {
-  private function _write_command($fname, $args) {
-  }
-
   private function _wait_data($key) {
     $sm = new SharedMemory($key, 'c');
 
@@ -30,6 +27,8 @@ class ArduinoRouter extends RequestHandler {
     }
 
     $sm->close();
+    if ($this->action == 'get_ar_data')
+      var_dump($payload);die;
     return json_decode($payload);
   }
 
@@ -56,7 +55,7 @@ class ArduinoRouter extends RequestHandler {
       throw new Exception('Nothing to write or encoding error');
     }
   
-    return $this->_put_data(AR_SHM, $payload);
+    return $this->_put_data(AR_SHM, $payload) ? 'PASS' : 'FAIL';
   }
 
   function put_web_data($args) {
@@ -65,18 +64,19 @@ class ArduinoRouter extends RequestHandler {
       throw new Exception('Nothing to write or encoding error');
     }
   
-    return $this->_put_data(WEB_SHM, $payload);
+    return $this->_put_data(WEB_SHM, $payload) ? 'PASS' : 'FAIL';
   }
 }
 
-$request = isset($_REQUEST['request']) ? json_decode($_REQUEST['request']) : false;
-if ($_REQUEST['request'] == 'put_ar_data') {  
-  $request = new stdClass();  
-  $request->action = 'put_ar_data';
-  $request->args = array('id' => +$_GET['id'], 'value' => 255);
+$action = isset($_REQUEST['action']) ? $_REQUEST['action'] : false;
+$args = isset($_REQUEST['args']) ? json_decode($_REQUEST['args']) : false;
+
+if ($action == 'put_web_data') {    
+  //$args = array('id' => +$_GET['id'], 'commands' => array(255));
+  //var_dump($args);
 }
 
-$handler = new ArduinoRouter($request);
-echo json_encode($handler->get_response());
+$handler = new ArduinoRouter($action, $args);
+$handler->respond();
 
 flush();

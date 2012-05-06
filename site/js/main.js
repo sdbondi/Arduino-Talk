@@ -17,7 +17,7 @@
   };
 
   arduino.open({
-    url: 'comet-router.php',
+    url: 'ajax/{action}/',
     recvAction: 'get_ar_data',
     sendAction: 'put_web_data',
     onRecieve: function(data) {

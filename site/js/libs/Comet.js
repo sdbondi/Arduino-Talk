@@ -51,15 +51,10 @@
     // Public methods
     this.startReceiving = function() {
       var xhr = incomingXHR = new XMLHttpRequest();
-      service_started = true;
-
-      var data = new FormData;
-      data.append('request', JSON.stringify({
-        action: this.options.recvAction
-      }));
+      service_started = true;      
       
       (function _service() {
-        xhr.open('POST', this.options.url, true);
+        xhr.open('POST', this.getActionUrl(this.options.recvAction), true);
 
         xhr.onload = function(e) {
           if (this.status !== 200) {
@@ -68,6 +63,12 @@
           }
 
           var response = JSON.parse(this.response);
+          if (!response) {
+            console.error('Parse error: "'+this.response+'"');
+            if (service_started) { setTimeout(_service.call(self), 0); };
+            return;
+          }
+
           if (response.state === 'error') {
             console.error(response.id, response.message);
             if (service_started) { setTimeout(_service.call(self), 0); };
@@ -86,7 +87,7 @@
           if (service_started) { setTimeout(_service.call(self), 0); };
         };
 
-        xhr.send(data);
+        xhr.send(null);
       }.call(this))
     };       
 
@@ -117,19 +118,33 @@
       this.options = {};
     };
 
-    this.sendObject = function(obj, complete) {
-      var id = getNextId();
+    this.getActionUrl = function(action) {
+      return this.options.url.replace('{action}', action);
+    };
 
-      events.register(id, complete);
+    this.sendObject = function(obj, complete) {
+      var id = getNextId();      
 
       var data = new FormData;
-      data.append('request', JSON.stringify({        
-        action: this.options.sendAction, 
-        args: { id: id, payload: obj}
-      }));
+      data.append('args', JSON.stringify({id: id, payload: obj }));
 
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', this.options.url, true);
+      xhr.open('POST', this.getActionUrl(this.options.sendAction), true);
+      xhr.onload = function() {
+        var response = JSON.parse(this.response);
+        if (response.state === 'error') {
+          console.error('ERROR: ' + response.id + response.message);
+          return;
+        }
+
+        if (response.result != 'PASS') {
+          console.error('Recieved unknown result: '+ response)
+          return;
+        }        
+
+        events.register(id, complete);
+      };
+
       xhr.send(data);
     };
   };

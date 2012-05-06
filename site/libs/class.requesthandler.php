@@ -1,11 +1,12 @@
 <?php
 
 class RequestHandler { 
-  public $request = null;
-  public $response = null;
+  public $action = null;
+  public $args = null;
 
-  function __construct($request) {
-    $this->request = $request;
+  function __construct($action, $args) {
+    $this->action = $action;
+    $this->args = $args;
   }
 
   protected function error($message) {
@@ -20,23 +21,31 @@ class RequestHandler {
     return array('state' => 'OK', 'result' => $result);
   }
 
-  public function get_response() {
-    if (isset($this->response)) {
-      return $this->response;
+  private function set_headers($length = false) {
+    header('Content-Type: application/json');
+    if ($length !== false) {
+      header('Content-Length: '.$length);
     }
-    
-    $request =& $this->request;
+  }
 
+  public function respond() {
     try {
-      if (!$request || !isset($request->action)) {
-        throw new Exception('Invalid or empty request');
+      if (empty($this->action)) {
+        throw new Exception('No action specified');
       }
 
-      if (!method_exists($this, $request->action)) {
-        throw new Exception("No action named '{$request->action}'.");
+      if (!method_exists($this, $this->action)) {
+        throw new Exception("No action named '{$this->action}'.");
       }
 
-      return $this->response = $this->response($this->{$request->action}($request->args));
+      $response = $this->response($this->{$this->action}($this->args));
+
+      $raw_resp = json_encode($response);
+      $this->set_headers(strlen($raw_resp));
+
+      echo $raw_resp;
+
+      return $response;
     } catch (Exception $ex) {
       return $this->error($ex->getMessage());
     }
