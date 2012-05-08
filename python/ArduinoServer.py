@@ -10,8 +10,8 @@ import json
 import time
 
 _WINDOWS = (platform.system() == 'Windows')
-#_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
-_AJAXURL = 'http://127.0.0.1/comet-arduino/ajax/%(action)s/'
+_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
+#_AJAXURL = 'http://127.0.0.1/comet-arduino/ajax/%(action)s/'
 _AUTH = ('stanb', 'arduino1')
 _CHAROFFSET = 32
 _CMDMAP = {
@@ -38,7 +38,6 @@ class ArduinoCommandServer(object):
     opts = self.options
     url = _AJAXURL % { 'action': 'get_web_data'}
 
-    print 'Getting from %s' % url   
     while True:     
       resp = requests.get(url, auth=_AUTH)
 
@@ -59,12 +58,10 @@ class ArduinoCommandServer(object):
       if obj['result'] == 'TMOUT':
         continue
       
-      print 'Got object: ', obj
       return obj['result']
 
   def toArduinoCommand(self, command):
     global _CMDMAP, _CHAROFFSET
-    print command
     if not command['command'] in _CMDMAP:
       print 'Unrecognised command: ', command['command']
       return False
@@ -83,7 +80,7 @@ class ArduinoCommandServer(object):
 
     if 'value' in command:
       result += str(command['value'])
-    print "COMMAND ", result
+
     return result+'\n'
 
   def toWeb(self, ar_cmd):
@@ -102,8 +99,9 @@ class ArduinoCommandServer(object):
 
   def processCommands(self, commands):
     results = []
-    for command in commands:
+    for command in commands:      
       cmd_str = self.toArduinoCommand(command)
+
       if not cmd_str:
         results.append(False)
         continue
@@ -115,6 +113,10 @@ class ArduinoCommandServer(object):
         time.sleep(0.1)
         ar_reply = self.serial.readline()
 
+      print '%s(%s, %s) -> %s' % (command['command'], command['pin'], command['mode'] \
+        if 'mode' in command else str(command['value']) \
+        if 'value' in command else 'None', ar_reply.strip())
+      
       results.append(self.toWeb(ar_reply))
 
     return results
@@ -124,7 +126,6 @@ class ArduinoCommandServer(object):
     opts = self.options
     url = _AJAXURL % { 'action': 'put_ar_data'}
 
-    print 'Sending results to %s' % url   
     data = { 'object' : json.dumps({ 'id': batch_id, 'object': results })}    
     resp = requests.post(url, data, auth=_AUTH)
 
@@ -155,18 +156,22 @@ class ArduinoCommandServer(object):
     opts = self.options
 
     while True:      
+      print 'Waiting for incoming commands...'
       results = self.getIncomingCommands()
-
+      
+      print '================================'
+      print 'Got command(s). Processing...'
       for _object in results:
         batch_id = _object['id']
         commands = _object['object']
-        print 'Got command set id:', batch_id, commands
 
         results = self.processCommands(commands)
-        print 'Got results: ', results
+        print 'Sending reply...'
 
         self.sendResponse(batch_id, results)
-      
+        print 'Done'
+        print '================================\n\n'
+
 
 def get_opts(args):
   global _WINDOWS

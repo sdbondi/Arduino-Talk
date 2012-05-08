@@ -23,7 +23,9 @@ class SharedMemory {
   }
 
   function __destruct() {
-    $this->close();
+    $this->delete();
+    $this->unlock(false);
+    $this->close();    
   }
 
   public function open() {
@@ -56,11 +58,11 @@ class SharedMemory {
     return sem_acquire($this->_semaphor);
   }
 
-  public function unlock() {
+  public function unlock($use_depth = true) {
     if (!$this->_semaphor) { return true; }
 
     $this->_lock_depth--;
-    if ($this->_lock_depth > 0) { return true; }
+    if ($use_depth && $this->_lock_depth > 0) { return true; }
 
     return sem_release($this->_semaphor);
   }
@@ -99,6 +101,10 @@ class SharedMemory {
   }
 
   public function write($data, $offset = 0) {
+    if (strlen($data) > $this->size) {
+      throw new Exception('Data bigger than memory segment.');
+    }
+
     $this->lock();
     $size = shmop_write($this->shmop_id, $data, $offset);
     $buf = shmop_read($this->shmop_id, 0, $this->_length);
