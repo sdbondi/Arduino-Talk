@@ -10,7 +10,9 @@ import json
 import time
 
 _WINDOWS = (platform.system() == 'Windows')
-_AJAXURL = 'http://10.0.0.106/comet-arduino/ajax/%(action)s/'
+#_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
+_AJAXURL = 'http://127.0.0.1/comet-arduino/ajax/%(action)s/'
+_AUTH = ('stanb', 'arduino1')
 _CHAROFFSET = 32
 _CMDMAP = {
   'ping'        : chr(_CHAROFFSET + 0),
@@ -32,13 +34,13 @@ class ArduinoCommandServer(object):
     self.options = opts or {}
 
   def getIncomingCommands(self):
-    global _AJAXURL;
+    global _AJAXURL, _AUTH
     opts = self.options
     url = _AJAXURL % { 'action': 'get_web_data'}
 
     print 'Getting from %s' % url   
     while True:     
-      resp = requests.get(url)
+      resp = requests.get(url, auth=_AUTH)
 
       if resp.status_code != 200 or resp.content == False:
         print 'ERROR: status_code %d or no content' % resp.status_code
@@ -58,8 +60,7 @@ class ArduinoCommandServer(object):
         continue
       
       print 'Got object: ', obj
-      result = obj['result']
-      return result['id'], result['payload'];
+      return obj['result']
 
   def toArduinoCommand(self, command):
     global _CMDMAP, _CHAROFFSET
@@ -119,13 +120,13 @@ class ArduinoCommandServer(object):
     return results
 
   def sendResponse(self, batch_id, results):
-    global _AJAXURL
+    global _AJAXURL, _AUTH
     opts = self.options
     url = _AJAXURL % { 'action': 'put_ar_data'}
 
     print 'Sending results to %s' % url   
-    data = { 'args' : json.dumps({ 'id': batch_id, 'results': results })}    
-    resp = requests.post(url, data)
+    data = { 'object' : json.dumps({ 'id': batch_id, 'object': results })}    
+    resp = requests.post(url, data, auth=_AUTH)
 
     if resp.status_code != 200 or resp.content == False:
       print 'ERROR: status_code %d or no content' % resp.status_code
@@ -154,14 +155,17 @@ class ArduinoCommandServer(object):
     opts = self.options
 
     while True:      
-      batch_id, commands = self.getIncomingCommands()
+      results = self.getIncomingCommands()
 
-      print 'Got command id', batch_id, commands
+      for _object in results:
+        batch_id = _object['id']
+        commands = _object['object']
+        print 'Got command set id:', batch_id, commands
 
-      results = self.processCommands(commands)
-      print 'Got results: ', results
+        results = self.processCommands(commands)
+        print 'Got results: ', results
 
-      self.sendResponse(batch_id, results)
+        self.sendResponse(batch_id, results)
       
 
 def get_opts(args):

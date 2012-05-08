@@ -8,7 +8,10 @@
 			"path": "python"
 		},
 		{
-			"path": "site"
+			"path": "website"
+		},
+		{
+			"path": "tests"
 		}
 	]
 }

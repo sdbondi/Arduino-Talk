@@ -2,20 +2,17 @@
   "use strict";
   
   var Events = function(context) {
-
     var events = {};  
 
-    this.dispatch = function(id, args) {
+    this.dispatch = function(id, obj) {
       var e = events[id];
       if (typeof e === 'undefined') { return; }
 
       var len = e.length,  
-        i = 0;
-
-      args = args || [];
+        i = 0;      
 
       for (;i < len;i++) {
-        e[i].apply(context, args);
+        e[i].apply(context, [obj]);
       }
 
       delete events[id];
@@ -70,10 +67,15 @@
           }
 
           if (response.state === 'error') {
-            console.error(response.id, response.message);
+            console.error(response.message);
             if (service_started) { setTimeout(_service.call(self), 0); };
             return;
           }
+
+          if (response.result === 'TMOUT') {            
+            if (service_started) { setTimeout(_service.call(self), 0); };
+            return;
+          }          
 
           if (typeof self.options.onRecieve == 'function') {
             if (self.options.onRecieve.apply(this, [response.result]) === false) {
@@ -82,7 +84,12 @@
             }
           }
 
-          events.dispatch(response.result.id, [response.result.results]);
+          var results = response.result,
+          len = results.length, i = 0;
+
+          for(;i < len;i++) {
+            events.dispatch(results[i].id, results[i]['object']);
+          }
 
           if (service_started) { setTimeout(_service.call(self), 0); };
         };
@@ -126,7 +133,7 @@
       var id = getNextId();      
 
       var data = new FormData;
-      data.append('args', JSON.stringify({id: id, payload: obj }));
+      data.append('object', JSON.stringify({id: id, object: obj }));
 
       var xhr = new XMLHttpRequest();
       xhr.open('POST', this.getActionUrl(this.options.sendAction), true);

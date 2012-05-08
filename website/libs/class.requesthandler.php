@@ -2,11 +2,12 @@
 
 class RequestHandler { 
   public $action = null;
-  public $args = null;
+  public $handlerObj = null;
 
-  function __construct($action, $args) {
+  function __construct($action, $handlerObj) {
     $this->action = $action;
-    $this->args = $args;
+
+    $this->handlerObj = $handlerObj;
   }
 
   protected function error($message) {
@@ -28,26 +29,30 @@ class RequestHandler {
     }
   }
 
-  public function respond() {
+  public function respond($context = array()) {
+    $response = null;
     try {
       if (empty($this->action)) {
         throw new Exception('No action specified');
       }
 
-      if (!method_exists($this, $this->action)) {
+      if (!method_exists($this->handlerObj, $this->action)) {
         throw new Exception("No action named '{$this->action}'.");
       }
 
-      $response = $this->response($this->{$this->action}($this->args));
+      $response = $this->response($this->handlerObj->{$this->action}($context));
 
-      $raw_resp = json_encode($response);
-      $this->set_headers(strlen($raw_resp));
-
-      echo $raw_resp;
-
-      return $response;
+      $raw_resp = json_encode($response);      
+    
     } catch (Exception $ex) {
-      return $this->error($ex->getMessage());
+      $response = $this->error($ex->getMessage());
+      $raw_resp = json_encode($response);
     }
+
+    $this->set_headers(strlen($raw_resp));
+
+    echo $raw_resp;
+    flush();
+    return $response;
   }
 }

@@ -22,6 +22,10 @@ class SharedMemory {
     $this->_semaphor = sem_get($key);
   }
 
+  function __destruct() {
+    $this->close();
+  }
+
   public function open() {
     if ($this->shmop_id !== false) {
       return true;
@@ -34,7 +38,7 @@ class SharedMemory {
       $this->size
     );
 
-    return ($this->shmop_id === false);
+    return ($this->shmop_id !== false);
   }
 
   public function close() {
@@ -43,7 +47,7 @@ class SharedMemory {
     return shmop_close($this->shmop_id);
   }
 
-  private function lock() {
+  public function lock() {
     if (!$this->shmop_id) { return false; }      
 
     $this->_lock_depth++;
@@ -52,7 +56,7 @@ class SharedMemory {
     return sem_acquire($this->_semaphor);
   }
 
-  private function unlock() {
+  public function unlock() {
     if (!$this->_semaphor) { return true; }
 
     $this->_lock_depth--;
@@ -97,6 +101,7 @@ class SharedMemory {
   public function write($data, $offset = 0) {
     $this->lock();
     $size = shmop_write($this->shmop_id, $data, $offset);
+    $buf = shmop_read($this->shmop_id, 0, $this->_length);
     $this->_length = strpos($buf, "\0");
     $this->unlock();
 
@@ -113,14 +118,14 @@ class SharedMemory {
 
   public function set($data) {
     $this->lock();    
-    $this->clear(strlen($data));
+    $this->clear();
     $size = $this->write($data, 0);
     $this->unlock();
 
     return $size;
   }
 
-  public function clear($offset = 0) {
+  public function clear() {
     $this->lock();
     
     $i = 0;
@@ -132,5 +137,4 @@ class SharedMemory {
 
     $this->unlock();
   }
-
 }
