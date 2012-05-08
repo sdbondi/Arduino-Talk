@@ -8,7 +8,7 @@
   };
 
   var getPOTValue = function(value) {    
-    return (value - 0) * (32 - 0) / (1024 - 0) + 15;
+    return (value - 0) * (32 - 15) / (1024 - 0) + 15;
   };
 
   var ready = function() {
