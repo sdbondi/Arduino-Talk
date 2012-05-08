@@ -25,10 +25,9 @@ class ArduinoRouter extends RequestHandler {
       $payload = trim($sm->consume());      
       $iterations++;      
     }
-
+   
     $sm->close();
-    if ($this->action == 'get_ar_data')
-      var_dump($payload);die;
+
     return json_decode($payload);
   }
 
@@ -70,11 +69,6 @@ class ArduinoRouter extends RequestHandler {
 
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : false;
 $args = isset($_REQUEST['args']) ? json_decode($_REQUEST['args']) : false;
-
-if ($action == 'put_web_data') {    
-  //$args = array('id' => +$_GET['id'], 'commands' => array(255));
-  //var_dump($args);
-}
 
 $handler = new ArduinoRouter($action, $args);
 $handler->respond();

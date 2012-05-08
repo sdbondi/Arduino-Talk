@@ -42,7 +42,7 @@
         return window.Comet._staticId = 0;
       }
 
-      return ++window.Comet._staticId;
+      return (++window.Comet._staticId % 32000);
     };
 
     // Public members
@@ -82,7 +82,7 @@
             }
           }
 
-          events.dispatch(response.result.id, [response.result]);
+          events.dispatch(response.result.id, [response.result.results]);
 
           if (service_started) { setTimeout(_service.call(self), 0); };
         };

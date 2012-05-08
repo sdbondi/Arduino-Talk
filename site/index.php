@@ -23,6 +23,9 @@
     <input type="button" id="g-button" value="Green" class="button" />
     <input type="button" id="b-button" value="Blue" class="button" />
 
+    <p id="temperature"></p>
+    <p id="pot-val"></p>
+
     <script type="text/javascript" src="js/libs/Comet.js"></script>
 
     <script type="text/javascript" src="js/libs/jquery.min.js"></script>  
