@@ -44,8 +44,10 @@ class ArduinoCommandServer(object):
         try:
           resp = requests.get(url, timeout=70, auth=_AUTH)
           break;
-        except (requests.exceptions.Timeout, ex):
+        except requests.exceptions.Timeout:
           print 'Get request timed out. Retrying...'
+        except requests.exceptions.ConnectionError as ex:
+          print 'Connection error ', ex.message
 
       if resp.status_code != 200 or resp.content == False:
         print 'ERROR: status_code %d or no content' % resp.status_code
@@ -148,7 +150,7 @@ class ArduinoCommandServer(object):
       try:
         resp = requests.post(url, data, timeout=10, auth=_AUTH)
         break;
-      except (requests.exceptions.Timeout, ex):
+      except requests.exceptions.Timeout:
         print 'Send request timed out. Retrying...'
 
     if resp.status_code != 200 or resp.content == False:
