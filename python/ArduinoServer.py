@@ -10,8 +10,8 @@ import json
 import time
 
 _WINDOWS = (platform.system() == 'Windows')
-_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
-#_AJAXURL = 'http://127.0.0.1/comet-arduino/ajax/%(action)s/'
+#_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
+_AJAXURL = 'http://localhost/comet-arduino/ajax/%(action)s/'
 _AUTH = ('stanb', 'arduino1')
 _CHAROFFSET = 32
 _CMDMAP = {
@@ -67,19 +67,22 @@ class ArduinoCommandServer(object):
       return False
 
     op_chr = _CMDMAP[command['command']]
-    pin = str(command['pin'])
-    if pin[0] == 'A':
-      pin = 14 + int(pin[1])
 
-    pin = int(pin)
+    if 'pin' in command:
+      pin = str(command['pin'])
+      if pin[0] == 'A':
+        pin = 14 + int(pin[1])
 
-    result = op_chr+chr(pin + _CHAROFFSET)
+      pin = int(pin)
+
+      result = op_chr+chr(pin + _CHAROFFSET)
 
     if 'mode' in command:
       result += 'i' if command['mode'] == 'input' else 'o'
 
-    if 'value' in command:
-      result += str(command['value'])
+    if 'args' in command and isinstance(command['args'], list):
+      command['args'] = [str(c) for c in command['args']]
+      result += '-'.join(command['args'])
 
     return result+'\n'
 
@@ -113,9 +116,16 @@ class ArduinoCommandServer(object):
         time.sleep(0.1)
         ar_reply = self.serial.readline()
 
-      print '%s(%s, %s) -> %s' % (command['command'], command['pin'], command['mode'] \
-        if 'mode' in command else str(command['value']) \
-        if 'value' in command else 'None', ar_reply.strip())
+      functionStr = command['command']+'('
+      if 'pin' in command:
+        functionStr += str(command['pin'])
+
+      if 'args' in command and isinstance(command['args'], list):
+        if 'pin' in command:
+          functionStr += ', '
+        functionStr += ', '.join(command['args'])
+
+      print functionStr + ') -> ' + ar_reply.strip()
       
       results.append(self.toWeb(ar_reply))
 
@@ -160,11 +170,11 @@ class ArduinoCommandServer(object):
       results = self.getIncomingCommands()
       
       print '================================'
-      print 'Got command(s). Processing...'
+      print 'Got command(s).'
       for _object in results:
         batch_id = _object['id']
         commands = _object['object']
-
+        print 'Batch ID: %d. Processing...' % batch_id
         results = self.processCommands(commands)
         print 'Sending reply...'
 

@@ -12,23 +12,26 @@
        More info: h5bp.com/b/378 -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <title></title>
+  <title>Arduino@Home</title>
   <meta name="description" content="">
   <meta name="author" content="">
   
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <input type="button" id="r-button" value="Red" class="button" />
     <input type="button" id="g-button" value="Green" class="button" />
     <input type="button" id="b-button" value="Blue" class="button" />
-
+ 
     <p id="temperature"></p>
     <p id="pot-val"></p>
 
-    <script type="text/javascript" src="js/libs/Comet.js"></script>
-
     <script type="text/javascript" src="js/libs/jquery.min.js"></script>  
+
+    <script type="text/javascript" src="js/libs/Comet.js"></script>
+    <script type="text/javascript" src="js/libs/Arduino.js"></script>
+
     <script type="text/javascript" src="js/main.js"></script>
 </body>
 </html>

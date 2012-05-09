@@ -27,7 +27,16 @@
     };  
   };
 
-  var Comet = window.Comet = function() {    
+  var Comet = window.Comet = function(options) {    
+    options = options || {};
+
+    if (typeof options.url === 'undefined') {
+      throw new Error('url is required.');
+    }
+
+    if (!options.recvAction) { options.recvAction = 'get_data'; }
+    if (!options.sendAction) { options.sendAction = 'put_data'; }
+
     // Private members
     var self = this,      
       events = new Events(this),
@@ -43,15 +52,15 @@
     };
 
     // Public members
-    this.options = null;
-    
+    this.onreceive = null;
+
     // Public methods
     this.startReceiving = function() {
       var xhr = incomingXHR = new XMLHttpRequest();
       service_started = true;      
       
       (function _service() {
-        xhr.open('POST', this.getActionUrl(this.options.recvAction), true);
+        xhr.open('POST', this.getActionUrl(options.recvAction), true);
 
         xhr.onload = function(e) {
           if (this.status !== 200) {
@@ -77,8 +86,8 @@
             return;
           }          
 
-          if (typeof self.options.onRecieve == 'function') {
-            if (self.options.onRecieve.apply(this, [response.result]) === false) {
+          if (typeof self.onreceive == 'function') {
+            if (self.onreceive.apply(this, [response.result]) === false) {
               if (service_started) { setTimeout(_service.call(self), 0); };
               return;
             }
@@ -98,21 +107,11 @@
       }.call(this))
     };       
 
-    this.open = function(options) {
-      options = options || {};
-
-      if (typeof options.url === 'undefined') {
-        throw new Error('url is required.');
-      }
-
-      if (!options.recvAction) { options.recvAction = 'get_data'; }
-      if (!options.sendAction) { options.sendAction = 'put_data'; }
-
-      this.options = options;
+    this.open = function(ready) {
       this.startReceiving();      
 
-      if (typeof options.ready === 'function') {
-        options.ready.call(this);
+      if (typeof ready === 'function') {
+        ready.call(this);
       }
     };
 
@@ -121,12 +120,10 @@
       service_started = false;
       incomingXHR && incomingXHR.abort();
       incomingXHR = undefined;
-
-      this.options = {};
     };
 
     this.getActionUrl = function(action) {
-      return this.options.url.replace('{action}', action);
+      return options.url.replace('{action}', action);
     };
 
     this.sendObject = function(obj, complete) {
@@ -136,7 +133,7 @@
       data.append('object', JSON.stringify({id: id, object: obj }));
 
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', this.getActionUrl(this.options.sendAction), true);
+      xhr.open('POST', this.getActionUrl(options.sendAction), true);
       xhr.onload = function() {
         var response = JSON.parse(this.response);
         if (response.state === 'error') {
