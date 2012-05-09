@@ -10,8 +10,8 @@ import json
 import time
 
 _WINDOWS = (platform.system() == 'Windows')
-#_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
-_AJAXURL = 'http://localhost/comet-arduino/ajax/%(action)s/'
+_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
+#_AJAXURL = 'http://localhost/comet-arduino/ajax/%(action)s/'
 _AUTH = ('stanb', 'arduino1')
 _CHAROFFSET = 32
 _CMDMAP = {
@@ -39,7 +39,13 @@ class ArduinoCommandServer(object):
     url = _AJAXURL % { 'action': 'get_web_data'}
 
     while True:     
-      resp = requests.get(url, auth=_AUTH)
+
+      while True:
+        try:
+          resp = requests.get(url, timeout=70, auth=_AUTH)
+          break;
+        except (requests.exceptions.Timeout, ex):
+          print 'Get request timed out. Retrying...'
 
       if resp.status_code != 200 or resp.content == False:
         print 'ERROR: status_code %d or no content' % resp.status_code
@@ -137,7 +143,13 @@ class ArduinoCommandServer(object):
     url = _AJAXURL % { 'action': 'put_ar_data'}
 
     data = { 'object' : json.dumps({ 'id': batch_id, 'object': results })}    
-    resp = requests.post(url, data, auth=_AUTH)
+
+    while True:
+      try:
+        resp = requests.post(url, data, timeout=10, auth=_AUTH)
+        break;
+      except (requests.exceptions.Timeout, ex):
+        print 'Send request timed out. Retrying...'
 
     if resp.status_code != 200 or resp.content == False:
       print 'ERROR: status_code %d or no content' % resp.status_code
