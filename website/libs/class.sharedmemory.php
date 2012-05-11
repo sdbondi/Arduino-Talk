@@ -26,6 +26,9 @@ class SharedMemory {
     $this->delete();
     $this->unlock(false);
     $this->close();    
+    if ($this->_semaphor) {
+      sem_remove($this->_semaphor);
+    }
   }
 
   public function open() {
