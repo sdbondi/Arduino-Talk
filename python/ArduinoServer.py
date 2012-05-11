@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import requests
+import human_curl as requests
 import serial
 import platform
 import sys
@@ -10,9 +10,8 @@ import json
 import time
 
 _WINDOWS = (platform.system() == 'Windows')
-_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
-#_AJAXURL = 'http://localhost/comet-arduino/ajax/%(action)s/'
-_AUTH = ('stanb', 'arduino1')
+_AJAXURL = 'http://localhost/comet-arduino/ajax/%(action)s/'
+_AUTH = ('', '')
 _CHAROFFSET = 32
 _CMDMAP = {
   'ping'        : chr(_CHAROFFSET + 0),
@@ -44,10 +43,10 @@ class ArduinoCommandServer(object):
         try:
           resp = requests.get(url, timeout=70, auth=_AUTH)
           break;
-        except requests.exceptions.Timeout:
-          print 'Get request timed out. Retrying...'
-        except requests.exceptions.ConnectionError as ex:
-          print 'Connection error ', ex.message
+        except requests.exceptions.CurlError as ex:
+          print 'ERROR ', ex.message, ' Retrying...'
+        #except requests.exceptions.Timeout:
+        #  print 'Get request timed out. Retrying...'
 
       if resp.status_code != 200 or resp.content == False:
         print 'ERROR: status_code %d or no content' % resp.status_code
@@ -115,14 +114,16 @@ class ArduinoCommandServer(object):
 
       if not cmd_str:
         results.append(False)
-        continue
-
-      self.serial.write(cmd_str)
-      
-      ar_reply = self.serial.readline()      
+        continue      
+            
+      ar_reply = ''
+      i = 0
       while len(ar_reply) == 0:
+        if i % 10 == 0:
+          self.serial.write(cmd_str)        
         time.sleep(0.1)
         ar_reply = self.serial.readline()
+        i += 1
 
       functionStr = command['command']+'('
       if 'pin' in command:
@@ -150,8 +151,10 @@ class ArduinoCommandServer(object):
       try:
         resp = requests.post(url, data, timeout=10, auth=_AUTH)
         break;
-      except requests.exceptions.Timeout:
-        print 'Send request timed out. Retrying...'
+      except requests.exceptions.CurlError as ex:
+        print 'ERROR ', ex.message, ' Retrying...'
+      #except requests.exceptions.Timeout:
+      #  print 'Send request timed out. Retrying...'
 
     if resp.status_code != 200 or resp.content == False:
       print 'ERROR: status_code %d or no content' % resp.status_code
