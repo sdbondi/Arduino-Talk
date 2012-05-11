@@ -60,3 +60,10 @@ Resposible for understanding the commands received and executing them.
 ## License
 
 See the file [LICENSE](https://github.com/sdbondi/Arduino-Talk/blob/master/LICENSE.txt)
+
+#TODO
+
+- Make a real front end example
+- Perhaps rethink PHP routing server as it seems limited/buggy
+- Improve and document JS API
+- crap load more...
