@@ -1,8 +1,9 @@
 <?php
 require_once('class.sharedmemory.php');
 
-define('AR_SHM', ftok(__FILE__, "a"));
-define('WEB_SHM', ftok(__FILE__, "w"));
+define('CHAN_SHM', ftok(__FILE__, "chan"));
+define('AR_SHM', ftok(__FILE__, "arduino"));
+define('WEB_SHM', ftok(__FILE__, "web"));
 define('LISTEN_TIMEOUT', 60/*secs*/);
                                                          
 class CometRouter {
@@ -93,5 +94,14 @@ class CometRouter {
     }
   
     return $this->_put_data(WEB_SHM, $payload) ? 'PASS' : 'FAIL';
+  }
+
+  function get_channel() {
+    $sm = new SharedMemory(CHAN_SHM, 'c', 0644, 1);
+    $sm->lock();
+    $chan = $sm->read() or 0;
+    $sm->set(++$chan);
+    $sm->unlock();
+    return $chan;
   }
 }
