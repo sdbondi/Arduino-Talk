@@ -21,34 +21,36 @@
       this.pinModes([
         ['A0', 'input'],
         ['A5', 'input'],
-        ['2', 'output']
-      ]).flush().done(function() {
-          var self = this, redOn = false;
+        [2, 'output']
+      ])
+      .digitalWrite(2, Arduino.LOW)
+      .flush().done(function() {
+        var self = this, redOn = false;
 
-          $('#r-button').click(function() {
-            var $this = $(this);
-            redOn = !redOn;
-            self
-              .digitalWrite(2, redOn)
-              .flush().done(function() {
-                $this.toggleClass('on');
-              });
-          });
+        $('#r-button').click(function() {
+          var $this = $(this);
+          redOn = !redOn;
+          self
+            .digitalWrite(2, redOn)
+            .flush().done(function() {
+              $this.toggleClass('on');
+            });
+        });
 
-          (function read() {
-            self
-              .analogRead('A0')
-              .analogRead('A5')
-              .flush().done(function(results) {
-                var tmp = results[0],
-                pot = results[1];
+        (function read() {
+          self
+            .analogRead('A0')
+            .analogRead('A5')
+            .flush().done(function(results) {
+              var tmp = results[0],
+              pot = results[1];
 
-                $('#temperature').html(pinToTemperature(tmp)+' degrees');
-                $('#pot-val').html(getPOTValue(pot));
+              $('#temperature').html(pinToTemperature(tmp)+' degrees');
+              $('#pot-val').html(getPOTValue(pot));
 
-                setTimeout(read, 1000);
-              });
-          })();
+              setTimeout(read, 1000);
+            });
+        })();
       });
 
       this.on({
