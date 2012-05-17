@@ -10,8 +10,9 @@ import json
 import time
 
 _WINDOWS = (platform.system() == 'Windows')
-_AJAXURL = 'http://localhost/comet-arduino/ajax/%(action)s/'
-_AUTH = ('', '')
+#_AJAXURL = 'http://localhost/comet-arduino/ajax/%(action)s/'
+_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
+_AUTH = ('stanb', 'arduino1')
 _CHAROFFSET = 32
 _CMDMAP = {
   'ping'        : chr(_CHAROFFSET + 0),
