@@ -10,9 +10,10 @@ import json
 import time
 
 _WINDOWS = (platform.system() == 'Windows')
-#_AJAXURL = 'http://localhost/comet-arduino/ajax/%(action)s/'
-_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
-_AUTH = ('stanb', 'arduino1')
+_AJAXURL = 'http://localhost/arduino/comet-router.php?action=%(action)s'
+#_AJAXURL = 'http://themousepotatowebsite.co.za/experiments/arduino/comet-router.php?action=%(action)s'
+#_AUTH = ('stanb', 'arduino1')
+_AUTH=None
 _CHAROFFSET = 32
 _CMDMAP = {
   'ping'        : chr(_CHAROFFSET + 0),
@@ -70,6 +71,7 @@ class ArduinoCommandServer(object):
 
   def toArduinoCommand(self, command):
     global _CMDMAP, _CHAROFFSET
+
     if not command['command'] in _CMDMAP:
       print 'Unrecognised command: ', command['command']
       return False

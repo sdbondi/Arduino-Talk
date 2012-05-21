@@ -1,9 +1,9 @@
 <?php
 require_once('class.sharedmemory.php');
 
-define('CHAN_SHM', ftok(__FILE__, "chan"));
-define('AR_SHM', ftok(__FILE__, "arduino"));
-define('WEB_SHM', ftok(__FILE__, "web"));
+define('CHAN_SHM', ftok(__FILE__, "c"));
+define('AR_SHM', ftok(__FILE__, "a"));
+define('WEB_SHM', ftok(__FILE__, "w"));
 define('LISTEN_TIMEOUT', 60/*secs*/);
                                                          
 class CometRouter {

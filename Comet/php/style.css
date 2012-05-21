@@ -419,3 +419,9 @@ p.error, span.error { color: #CC3333;}
 #b-button.on {
     background: blue;
 }
+
+#temperature {
+  position: absolute;
+  top: 240px;
+  margin-left: 50px;
+}

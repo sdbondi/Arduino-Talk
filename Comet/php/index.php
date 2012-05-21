@@ -28,9 +28,11 @@
     <p id="pot-val"></p>
 
     <script type="text/javascript" src="js/libs/jquery.min.js"></script>  
+    <script type="text/javascript" src="js/libs/modernizr-2.5.2.js"></script>
 
     <script type="text/javascript" src="js/libs/Comet.js"></script>
     <script type="text/javascript" src="js/libs/Arduino.js"></script>
+    <script type="text/javascript" src="js/libs/RoundGauge.js"></script>
 
     <script type="text/javascript" src="js/main.js"></script>
 </body>

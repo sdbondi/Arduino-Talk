@@ -9,6 +9,13 @@
     return Arduino.map(value, 0, 1024, 15, 32);
   };
 
+  var tempGauge = new RoundGauge({
+    el: $('#temperature')[0]
+  });
+
+  tempGauge.render();
+  $('body').append(tempGauge.el);
+
   var arduino = new Arduino({
       comet: {
         url: 'comet-router.php?action={action}',
@@ -43,10 +50,13 @@
             .analogRead('A5')
             .flush().done(function(results) {
               var tmp = results[0],
-              pot = results[1];
+              pot = results[1],
+              temperature = pinToTemperature(tmp);
 
-              $('#temperature').html(pinToTemperature(tmp)+' degrees');
+              //$('#temperature').html(temperature+' degrees');
               $('#pot-val').html(getPOTValue(pot));
+
+              tempGauge.setValue(temperature);
 
               setTimeout(read, 1000);
             });

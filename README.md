@@ -48,7 +48,7 @@ arduino.open(function() {
 
 ## PHP Command Router
 Furnisheds requests from JS and Python and relays messages using
-shared memory objects.
+shared memory objects. You will not be able to run script server on Windows.
 
 ## Python server
 Resposible for translating the JSON commands to commands the Arduino
