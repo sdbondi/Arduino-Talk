@@ -15,12 +15,13 @@
     this.comet.onreceive = onReceive.bind(this);
 
     // Public methods
-    this.pinMode = function(pin, mode) {
+    this.pinMode = function(pin, mode, callback) {
       commandBuffer.push({
         command: 'pinMode',
         pin: pin,
         // We want 'i' or 'o' for the pinmode
-        args: [mode[0]]        
+        args: [mode[0]],
+        callback: callback        
       });
 
       return this;
@@ -38,39 +39,43 @@
       return this;
     };
 
-    this.digitalWrite = function(pin, value) {
+    this.digitalWrite = function(pin, value, callback) {
       commandBuffer.push({
         command: 'digitalWrite',
         pin: pin,
-        args: [value ? Arduino.HIGH : Arduino.LOW]        
+        args: [value ? Arduino.HIGH : Arduino.LOW],
+        callback: callback        
       });
 
       return this;
     };
 
-    this.digitalRead = function(pin) {
+    this.digitalRead = function(pin, callback) {
       commandBuffer.push({
         command: 'digitalRead',
-        pin: pin
+        pin: pin,
+        callback: callback
       });
 
       return this;
     };
 
-    this.analogRead = function(pin) {
+    this.analogRead = function(pin, callback) {
       commandBuffer.push({
         command: 'analogRead',
-        pin: pin       
+        pin: pin,
+        callback: callback              
       });
 
       return this;
     };
 
-    this.analogWrite = function(pin, value) {
+    this.analogWrite = function(pin, value, callback) {
       commandBuffer.push({
         command: 'analogWrite',
         pin: pin,
-        args: [value]        
+        args: [value],
+        callback: callback              
       });
 
       return this;
@@ -84,7 +89,20 @@
       }
 
       $(this).trigger('send', [commandBuffer]);
+      var callbacks = commandBuffer.map(function(o) { 
+        var cb = o.callback;
+        delete o.callback; // Note the side affect
+        return cb;
+      });
+
       this.comet.sendObject(commandBuffer, function(results) {
+        var i = 0, len = callbacks.length;
+
+        for (;i < len;i++) {
+          var cb = callbacks[i];
+          if (typeof cb === 'function') { cb.apply(self, [results[i]]); }
+        }
+
         deferred.resolveWith(self, [results]);
       });
 
