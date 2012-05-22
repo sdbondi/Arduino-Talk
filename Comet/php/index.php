@@ -25,7 +25,7 @@
     <input type="button" id="b-button" value="Blue" class="button" />
  
     <p id="temperature"></p>
-    <p id="pot-val"></p>
+    <p id="temp-readout"></p>
 
     <script type="text/javascript" src="js/libs/jquery.min.js"></script>  
     <script type="text/javascript" src="js/libs/modernizr-2.5.2.js"></script>

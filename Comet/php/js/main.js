@@ -6,7 +6,7 @@
   };    
 
   var getPOTValue = function(value) {    
-    return Arduino.map(value, 0, 1024, 15, 32);
+    return Arduino.map(value, 0, 1024, 10, 32);
   };
 
   var tempGauge = new RoundGauge({
@@ -46,17 +46,17 @@
 
         (function read() {
           self
-            .analogRead('A0')
+            .analogRead('A0', function(r) { console.log('THIS RESULT ', r); })
             .analogRead('A5')
             .flush().done(function(results) {
               var tmp = results[0],
               pot = results[1],
               temperature = pinToTemperature(tmp);
 
-              //$('#temperature').html(temperature+' degrees');
-              $('#pot-val').html(getPOTValue(pot));
+              $('#temp-readout').html(Math.round(temperature)+'&deg;C');
 
               tempGauge.setValue(temperature);
+              tempGauge.setCriticals(getPOTValue(pot));
 
               setTimeout(read, 1000);
             });
