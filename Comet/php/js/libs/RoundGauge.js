@@ -357,22 +357,29 @@
 
     setCriticals: function(min, max) {
       var ctx = this.criticalCanvas.getContext('2d'),
-      me = this;
+      me = this,
+      options = this.options;
 
       if (typeof min === 'object') {
         max = min.max;
         min = min.min;
       }
 
-      if (min) {
+      var hasChanged = false;
+
+      if (min && min != options.minCritical) {
+        hasChanged = true;
         this.options.minCritical = min;
       }
 
-      if (max) {
+      if (max && max != options.maxCritical) {
+        hasChanged = true;
         this.options.maxCritical = max;
       }
 
-      window.requestAnimationFrame(function() {
+      if (!hasChanged) { return; }
+
+      window.requestAnimFrame(function() {
         me.drawCriticals(ctx);
       });
 
